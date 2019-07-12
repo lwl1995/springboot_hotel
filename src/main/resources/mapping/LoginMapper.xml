@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.java.mapper.LoginMapper">
+
+	<!-- 描述一对多的关系，描述OneMenu与TwoMenu之间的关系，在Mybatis中，描述一对一和一对多都用<resultMap>标签 
+		dao层：List<OneMenu> getMenus(); 下面resultMap等于List集合的泛型OneMenu -->
+	<resultMap type="cn.java.entity.OneMenu" id="Menu">
+		<!-- OneMenu中的各个属性 property=实体类的第一个属性id javaType=id的类型Long column=实体类id对应数据库id 
+			JdbcType=数据库id的类型，要大写 -->
+		<result property="id" javaType="Long" column="id" jdbcType="BIGINT" />
+		<result property="oneName" javaType="String" column="oneName"
+			jdbcType="VARCHAR" />
+		<!-- 第三个是集合比较特殊，用collect -->
+		<collection property="twoMenuList" ofType="cn.java.entity.TwoMenu">
+			<result property="twoName" javaType="String" column="twoName"
+				jdbcType="VARCHAR" />
+			<result property="twoUrl" javaType="String" column="twoUrl"
+				jdbcType="VARCHAR" />
+			<result property="parent" javaType="Long" column="parent"
+				jdbcType="BIGINT" />
+		</collection>
+	</resultMap>
+
+	<!-- 根据用户主键，获取用户拥有的权限 -->
+	<select id="getMenusByUserId" resultMap="Menu" parameterType="Long">
+	
+	SELECT * FROM
+	(select sa.id,sa.authority_name as oneName 
+	from system_user su 
+	INNER JOIN user_authority ua on su.id = ua.user_id 
+	INNER join system_authority sa
+	on sa.id = ua.authority_id where sa.parent=0
+	and su.id=#{0}) t1              <!-- #{} 中的内容也可以为别的值 -->
+	INNER JOIN
+	(select sa.authority_name as twoName,sa.authority_url as twoUrl,sa.parent
+	from system_user su 
+	INNER JOIN user_authority ua 
+	on su.id = ua.user_id
+	INNER join system_authority sa
+	on sa.id = ua.authority_id 
+	where sa.parent !=0 and su.id=#{0}) t2
+	on t1.id=t2.parent
+
+	<!-- 查询所有的菜单
+	SELECT * FROM
+	(select sa.id,sa.authority_name as oneName from system_user su INNER JOIN
+	user_authority ua on su.id = ua.user_id INNER join system_authority sa
+	on sa.id = ua.authority_id where sa.parent=0 and su.id=1) t1
+	INNER JOIN
+	(select sa.authority_name as twoName, sa.authority_url as twoUrl,sa.parent
+	from system_user su INNER JOIN user_authority ua on su.id = ua.user_id
+	INNER join system_authority sa on sa.id = ua.authority_id where
+	sa.parent !=0 and su.id=1) t2
+	on t1.id=t2.parent
+ -->
+	</select>
+	
+
+</mapper>

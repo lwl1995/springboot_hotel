@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.java.mapper.DemoExcelMapper">
+
+	<!-- 数据导出 -->
+	<select id="getExcelInfo" resultType="DemoExcel">
+		select seckill_id, name, number, start_time, end_time, create_time
+		from DemoExcel
+		
+	</select>
+	
+	
+
+
+</mapper>
